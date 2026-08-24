@@ -26,21 +26,20 @@ html[data-theme=light] #hero::after,html[data-theme=light] #services::after,html
 #hero::before,#services::before,#pain::before,#cta::before{filter:saturate(1.22) contrast(1.1) brightness(1.09)}
 
 /* ==== Light sections: subtle cinematic backgrounds ==== */
-#why::before,#compare::before,#faq::before{content:'';position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;animation:25s ease-in-out infinite alternate kenBurns}
+#why::before,#faq::before{content:'';position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;animation:25s ease-in-out infinite alternate kenBurns}
 #why::before{background-image:url('../img/section-bg-why-light-sharp.jpg')}
-#compare::before{background-image:url('../img/section-bg-compare-light-sharp.jpg')}
 #faq::before{background-image:url('../img/section-bg-faq-light-sharp.jpg')}
-#why::after,#compare::after,#faq::after{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(248,248,248,.74) 0,rgba(248,248,248,.66) 50%,rgba(248,248,248,.8) 100%);pointer-events:none}
-#why .wrap,#compare .wrap,#faq .wrap{position:relative;z-index:2}
-#why,#compare,#faq{overflow:hidden}
-@media (prefers-reduced-motion:reduce){#why::before,#compare::before,#faq::before{animation:none}}
+#why::after,#faq::after{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(248,248,248,.74) 0,rgba(248,248,248,.66) 50%,rgba(248,248,248,.8) 100%);pointer-events:none}
+#why .wrap,#faq .wrap{position:relative;z-index:2}
+#why,#faq{overflow:hidden}
+@media (prefers-reduced-motion:reduce){#why::before,#faq::before{animation:none}}
 
 /* ==== Hero: apartment photo background ==== */
 #hero::before{content:'';position:absolute;inset:0;z-index:0;background-image:url('../img/pain-bg-2k.jpg');background-size:cover;background-position:center;animation:25s ease-in-out infinite alternate kenBurns;filter:saturate(1.12) contrast(1.06)}
 #hero::after{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(6,14,24,.66) 0,rgba(6,14,24,.48) 50%,rgba(6,14,24,.7) 100%);pointer-events:none}
 
 /* ==== Light bgs: more visible, contrasty ==== */
-#why::before,#compare::before,#faq::before{filter:saturate(1.2) contrast(1.16) brightness(1.02)}
+#why::before,#faq::before{filter:saturate(1.2) contrast(1.16) brightness(1.02)}
 /* ==== Theme toggle: keep photo backgrounds, adapt overlays ==== */
 html[data-theme=light] #hero::before,html[data-theme=light] #services::before,html[data-theme=light] #pain::before,html[data-theme=light] #cta::before{display:block;filter:saturate(1.05) contrast(1.03)}
 html[data-theme=light] #hero::after,html[data-theme=light] #services::after,html[data-theme=light] #pain::after,html[data-theme=light] #cta::after{display:block;background:linear-gradient(180deg,rgba(237,241,245,.84) 0,rgba(237,241,245,.76) 50%,rgba(237,241,245,.88) 100%)}
@@ -57,3 +56,12 @@ html[data-theme=light] #hero::after,html[data-theme=light] #services::after,html
 
 /* ==== Labels over photos: darker accent in light theme ==== */
 html[data-theme=light] #pain .label,html[data-theme=light] #services .label,html[data-theme=light] #cta .label,html[data-theme=light] .hero-label{color:var(--accent-deep)}
+/* ==== Furniture section ==== */
+.furn-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin:0 0 44px;text-align:left}
+.furn{margin:0;background:var(--s-light-bg-2);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-lg)}
+.furn img{width:100%;height:340px;object-fit:cover;transition:transform .5s}
+.furn:hover img{transform:scale(1.05)}
+.furn figcaption{padding:14px 18px 16px;font-weight:700;line-height:1.35}
+.furn figcaption small{display:block;font-weight:400;font-size:13px;color:var(--s-light-muted);margin-top:3px}
+.furn-feats{text-align:left;max-width:860px;margin:0 auto 36px}
+@media(max-width:900px){.furn-grid{grid-template-columns:1fr;max-width:560px;margin-left:auto;margin-right:auto}.furn img{height:300px}}
