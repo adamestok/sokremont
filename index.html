@@ -813,6 +813,9 @@
   if (!sid) { sid = Math.random().toString(36).slice(2, 10) + Date.now().toString(36); localStorage.setItem('chat_sid', sid); }
   var name = localStorage.getItem('chat_name') || '';
   var lastTs = 0, timer = null, busy = false;
+  var sentCids = [];
+  try { sentCids = JSON.parse(localStorage.getItem('chat_cids_' + sid) || '[]'); } catch (e) { sentCids = []; }
+  function rememberCid(c) { if (!c) return; sentCids.push(c); if (sentCids.length > 200) sentCids = sentCids.slice(-200); localStorage.setItem('chat_cids_' + sid, JSON.stringify(sentCids)); }
   if (name) { nameI.value = name; } else { nameI.style.display = 'block'; }
   function addMsg(m) {
     var d = document.createElement('div');
@@ -839,7 +842,10 @@
   }
   function poll() {
     fetch(API + '/poll?sid=' + encodeURIComponent(sid) + '&since=' + lastTs).then(function (r) { return r.json(); }).then(function (d) {
-      (d.msgs || []).forEach(function (m) { addMsg(m); saveHist(m); if (m.ts > lastTs) lastTs = m.ts; });
+      (d.msgs || []).forEach(function (m) {
+        if (m.cid && sentCids.indexOf(m.cid) >= 0) { if (m.ts > lastTs) lastTs = m.ts; return; }
+        addMsg(m); saveHist(m); if (m.ts > lastTs) lastTs = m.ts;
+      });
     }).catch(function () {});
   }
   function sendMsg() {
@@ -847,13 +853,16 @@
     if (!t || busy) return;
     if (!n) { nameI.style.display = 'block'; nameI.style.borderColor = '#D0344A'; nameI.placeholder = 'Как вас зовут?'; nameI.focus(); return; }
     busy = true;
+    var cid = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    rememberCid(cid);
     var m = { from: 'user', name: n, text: t, ts: Date.now() };
     addMsg(m); saveHist(m); if (m.ts > lastTs) lastTs = m.ts;
     text.value = '';
     localStorage.setItem('chat_name', n);
     fetch(API + '/msg', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sid: sid, name: n, text: t, hp: '' }) }).then(function (r) { return r.json(); }).then(function (d) {
+      body: JSON.stringify({ sid: sid, name: n, text: t, hp: '', cid: cid }) }).then(function (r) { return r.json(); }).then(function (d) {
       busy = false;
+      if (d.ts && d.ts > lastTs) lastTs = d.ts;
       if (!d.ok) { var e = document.createElement('div'); e.className = 'chat-msg bot'; e.textContent = d.error || 'Не отправилось, попробуйте ещё раз'; msgs.appendChild(e); msgs.scrollTop = msgs.scrollHeight; }
     }).catch(function () { busy = false; });
   }
