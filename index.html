@@ -764,6 +764,109 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
 <script src="assets/js/main.js" defer></script>
 
+
+<!-- Live chat: site <-> Telegram -->
+<style>
+.chat-fab{position:fixed;right:20px;bottom:232px;z-index:9999;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#2AABEE;color:#fff;font-size:24px;cursor:pointer;box-shadow:0 10px 26px rgba(5,12,20,.35);transition:transform .25s}
+.chat-fab:hover{transform:scale(1.08)}
+.chat-box{position:fixed;right:20px;bottom:300px;z-index:10000;width:340px;max-width:calc(100vw - 24px);height:480px;max-height:calc(100vh - 320px);background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(5,12,20,.35);display:none;flex-direction:column;overflow:hidden}
+.chat-box.open{display:flex}
+.chat-head{background:var(--base);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px}
+.chat-head b{font-size:15px;display:block}
+.chat-head small{display:block;font-size:12px;color:#7dd87d}
+.chat-head .chat-x{margin-left:auto;background:none;border:0;color:#fff;font-size:18px;cursor:pointer}
+.chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;background:#F4F6F8}
+.chat-msg{max-width:82%;padding:9px 12px;border-radius:12px;font-size:14px;line-height:1.45;word-wrap:break-word;white-space:pre-wrap}
+.chat-msg.user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+.chat-msg.bot{align-self:flex-start;background:#fff;color:var(--s-light-text);border-bottom-left-radius:4px;box-shadow:0 1px 3px rgba(13,27,42,.12)}
+.chat-msg .who{display:block;font-size:11px;opacity:.7;margin-bottom:2px}
+.chat-input{display:flex;gap:8px;padding:10px;border-top:1px solid var(--s-light-border);background:#fff}
+.chat-input input{flex:1;min-width:0;border:1px solid var(--s-light-border);border-radius:10px;padding:10px 12px;font-size:14px;outline:none}
+.chat-input input:focus{border-color:var(--accent)}
+.chat-input button{border:0;background:var(--accent);color:#fff;border-radius:10px;width:44px;cursor:pointer;font-size:16px}
+.chat-note{font-size:11px;color:var(--s-light-muted);text-align:center;padding:0 10px 8px;background:#fff}
+@media(max-width:768px){.chat-fab{bottom:232px;right:14px;width:52px;height:52px;font-size:21px}.chat-box{right:12px;left:12px;width:auto;bottom:296px}}
+</style>
+<button class="chat-fab" id="chatFab" aria-label="Открыть чат"><i class="fa-solid fa-comment-dots" aria-hidden="true"></i></button>
+<div class="chat-box" id="chatBox" role="dialog" aria-label="Чат с СОКРЕМОНТ">
+  <div class="chat-head">
+    <i class="fa-solid fa-headset" aria-hidden="true" style="font-size:20px"></i>
+    <div><b>СОКРЕМОНТ — чат</b><small>отвечаем в течение пары минут</small></div>
+    <button class="chat-x" id="chatClose" aria-label="Закрыть чат"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+  </div>
+  <div class="chat-msgs" id="chatMsgs"></div>
+  <div class="chat-input">
+    <input type="text" id="chatName" placeholder="Ваше имя" maxlength="60" style="max-width:110px;display:none" autocomplete="name">
+    <input type="text" id="chatText" placeholder="Напишите сообщение..." maxlength="1000">
+    <button id="chatSend" aria-label="Отправить"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></button>
+  </div>
+  <div class="chat-note">Напишите — ответим здесь и в Telegram</div>
+</div>
+<script>
+(function(){
+  var API = 'https://sok-chat.adamynews.workers.dev';
+  var fab = document.getElementById('chatFab'), box = document.getElementById('chatBox'),
+      msgs = document.getElementById('chatMsgs'), text = document.getElementById('chatText'),
+      nameI = document.getElementById('chatName'), send = document.getElementById('chatSend'),
+      closeB = document.getElementById('chatClose');
+  var sid = localStorage.getItem('chat_sid');
+  if (!sid) { sid = Math.random().toString(36).slice(2, 10) + Date.now().toString(36); localStorage.setItem('chat_sid', sid); }
+  var name = localStorage.getItem('chat_name') || '';
+  var lastTs = 0, timer = null, busy = false;
+  if (name) { nameI.value = name; } else { nameI.style.display = 'block'; }
+  function addMsg(m) {
+    var d = document.createElement('div');
+    d.className = 'chat-msg ' + (m.from === 'user' ? 'user' : 'bot');
+    if (m.from === 'user') { d.textContent = m.text; }
+    else { var w = document.createElement('span'); w.className = 'who'; w.textContent = 'СОКРЕМОНТ'; d.appendChild(w); d.appendChild(document.createTextNode(m.text)); }
+    msgs.appendChild(d);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+  function hist() { try { return JSON.parse(localStorage.getItem('chat_hist_' + sid) || '[]'); } catch (e) { return []; } }
+  function saveHist(m) { var a = hist(); a.push(m); if (a.length > 100) a = a.slice(-100); localStorage.setItem('chat_hist_' + sid, JSON.stringify(a)); }
+  function render() {
+    var a = hist();
+    msgs.innerHTML = '';
+    if (!a.length) {
+      var d = document.createElement('div');
+      d.className = 'chat-msg bot';
+      d.textContent = 'Здравствуйте! Напишите ваш вопрос — отвечаем почти сразу в рабочее время.';
+      msgs.appendChild(d);
+    }
+    a.forEach(addMsg);
+    lastTs = a.length ? a[a.length - 1].ts : 0;
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+  function poll() {
+    fetch(API + '/poll?sid=' + encodeURIComponent(sid) + '&since=' + lastTs).then(function (r) { return r.json(); }).then(function (d) {
+      (d.msgs || []).forEach(function (m) { addMsg(m); saveHist(m); if (m.ts > lastTs) lastTs = m.ts; });
+    }).catch(function () {});
+  }
+  function sendMsg() {
+    var t = text.value.trim(), n = nameI.value.trim();
+    if (!t || busy) return;
+    if (!n) { nameI.style.display = 'block'; nameI.style.borderColor = '#D0344A'; nameI.placeholder = 'Как вас зовут?'; nameI.focus(); return; }
+    busy = true;
+    var m = { from: 'user', name: n, text: t, ts: Date.now() };
+    addMsg(m); saveHist(m); if (m.ts > lastTs) lastTs = m.ts;
+    text.value = '';
+    localStorage.setItem('chat_name', n);
+    fetch(API + '/msg', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sid: sid, name: n, text: t, hp: '' }) }).then(function (r) { return r.json(); }).then(function (d) {
+      busy = false;
+      if (!d.ok) { var e = document.createElement('div'); e.className = 'chat-msg bot'; e.textContent = d.error || 'Не отправилось, попробуйте ещё раз'; msgs.appendChild(e); msgs.scrollTop = msgs.scrollHeight; }
+    }).catch(function () { busy = false; });
+  }
+  fab.addEventListener('click', function () {
+    var open = box.classList.toggle('open');
+    if (open) { render(); poll(); clearInterval(timer); timer = setInterval(poll, 4000); text.focus(); }
+    else { clearInterval(timer); }
+  });
+  closeB.addEventListener('click', function () { box.classList.remove('open'); clearInterval(timer); });
+  send.addEventListener('click', sendMsg);
+  text.addEventListener('keydown', function (e) { if (e.key === 'Enter') sendMsg(); });
+})();
+</script>
 </body>
 </html>
 
