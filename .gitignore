@@ -2,3 +2,5 @@ sitesokstok.zip
 *.zip
 Thumbs.db
 Desktop.ini
+worker/wrangler.toml
+cf_token.txt
