@@ -53,7 +53,7 @@ export default {
       if (!kv) return j({ ok: false, error: 'KV binding не найден: добавьте KV namespace в Settings -> Bindings' }, 500);
 
       if (p === '/msg' && req.method === 'POST') return await hMsg(req, kv, env, ctx);
-      if (p === '/voice' && req.method === 'POST') return await hVoiceUp(req, kv, env, ctx);
+      if (p === '/voice' && req.method === 'POST') return j({ ok: false, error: 'Voice messages from site are disabled' }, 403);
       if (p === '/voice' && req.method === 'GET') return await hVoiceGet(url, kv);
       if (p === '/poll' && req.method === 'GET') return await hPoll(url, kv, ctx);
       if (p === '/webhook' || p === '/tgwebhook') return await hWebhook(req, kv, env, ctx);
