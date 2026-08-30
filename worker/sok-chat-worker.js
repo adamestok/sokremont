@@ -223,10 +223,11 @@ async function tgMultipart(c, method, fd) {
 async function hVoiceGet(url, kv) {
   const fid = url.searchParams.get('fid') || '';
   if (!/^[A-Za-z0-9_-]{1,128}$/.test(fid)) return new Response('bad fid', { status: 400 });
-  const res = await kv.getWithMetadata('a:' + fid, { type: 'arrayBuffer' });
+  const res = await kv.getWithMetadata('a:' + fid, { type: 'text' });
   if (!res.value) return new Response('not found', { status: 404 });
   const mime = (res.metadata && res.metadata.mime) || 'audio/ogg';
-  return new Response(res.value, {
+  const buf = b64dec(res.value);
+  return new Response(buf, {
     headers: cors({
       'Content-Type': mime,
       'Cache-Control': 'public, max-age=86400',
