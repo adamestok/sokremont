@@ -166,8 +166,8 @@
       <div class="hdr-phone">
         <a href="tel:+79328486889">+7 (932) 848-68-89</a>
         <span class="online"><span class="dot"></span>Сейчас онлайн</span>
-        <span class="online-sub">Отвечаем за <b id="answerTime">47</b> секунд в среднем</span>
       </div>
+      <button class="hdr-theme" id="themeBtn" aria-label="Переключить тему" aria-pressed="false"><i class="fa-solid fa-sun" aria-hidden="true"></i><span class="tip">Светлая тема</span></button>
       <a class="btn btn-primary hdr-cta" href="#contacts"><span>Оставить заявку</span></a>
       <button class="burger" id="burger" aria-label="Открыть меню" aria-expanded="false"><span></span><span></span><span></span></button>
     </div>
@@ -539,12 +539,12 @@
         <img src="assets/img/gallery-109.webp" alt="Наши работы — ремонт в Оренбурге, СОКРЕМОНТ" width="700" height="700" loading="lazy">
         <figcaption>Наши работы · Оренбург<small>Фото с объекта</small></figcaption>
       </figure>
-      <figure data-aos="fade-up" data-aos-delay="160" data-src="assets/img/gallery-110.webp">
-        <img src="assets/img/gallery-110.webp" alt="Наши работы — отделка квартиры в Оренбурге, СОКРЕМОНТ" width="700" height="700" loading="lazy">
+      <figure data-aos="fade-up" data-aos-delay="160" data-src="assets/img/gallery-110.png">
+        <img src="assets/img/gallery-110.png" alt="Наши работы — отделка квартиры в Оренбурге, СОКРЕМОНТ" width="700" height="700" loading="lazy">
         <figcaption>Наши работы · Оренбург<small>Фото с объекта</small></figcaption>
       </figure>
-      <figure data-aos="fade-up" data-aos-delay="240" data-src="assets/img/gallery-111.webp">
-        <img src="assets/img/gallery-111.webp" alt="Наши работы — ремонт санузла в Оренбурге, СОКРЕМОНТ" width="700" height="700" loading="lazy">
+      <figure data-aos="fade-up" data-aos-delay="240" data-src="assets/img/gallery-111.png">
+        <img src="assets/img/gallery-111.png" alt="Наши работы — ремонт санузла в Оренбурге, СОКРЕМОНТ" width="700" height="700" loading="lazy">
         <figcaption>Наши работы · Оренбург<small>Фото с объекта</small></figcaption>
       </figure>
       <figure data-aos="fade-up" data-src="assets/img/gallery-112.webp">
@@ -566,6 +566,7 @@
     </div>
     <p class="sub center" style="margin-top:34px">Объекты в работе показываем в нашей <a href="https://vk.ru/sok_056" target="_blank" rel="noopener" style="color:var(--s-accent);text-decoration:underline">VK-группе</a> — фото и видеоматериал с площадки.</p>
     <a class="btn btn-dark" href="https://vk.ru/sok_056" target="_blank" rel="noopener" style="margin-top:8px"><i class="fa-brands fa-vk" aria-hidden="true"></i><span>Смотреть объекты в VK</span></a>
+    <a class="btn btn-dark" href="https://t.me/SOK_56" target="_blank" rel="noopener" style="margin-top:8px"><i class="fa-brands fa-telegram" aria-hidden="true"></i><span>А также и в нашем ТГ канале</span></a>
 
     <h3 class="vid-title" data-aos="fade-up">Видео обзоры работ</h3>
     <div class="vids">
@@ -783,9 +784,9 @@
   </div>
 </footer>
 
-<a class="fab-wa" href="https://wa.me/79328486889" target="_blank" rel="noopener" aria-label="Написать в WhatsApp"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></a>
-<button class="fab-theme" id="themeBtn" aria-label="Переключить тему"><i class="fa-solid fa-sun" aria-hidden="true"></i><span class="tip">Светлая тема</span></button>
-<a class="fab-call" href="tel:+79328486889" aria-label="Позвонить в СОКРЕМОНТ"><i class="fa-solid fa-phone" aria-hidden="true"></i><span class="tip">Позвонить сейчас</span></a>
+<a class="fab-wa" href="https://wa.me/79328486889" target="_blank" rel="noopener" aria-label="Написать в WhatsApp"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i><span class="tip">Написать в WhatsApp</span></a>
+<a class="fab-tg" href="https://t.me/SOK_56" target="_blank" rel="noopener" aria-label="Написать в Telegram"><i class="fa-brands fa-telegram" aria-hidden="true"></i><span class="tip">Написать в Telegram</span></a>
+<a class="fab-call" href="tel:+79328486889" aria-label="Позвонить в СОКРЕМОНТ"><i class="fa-solid fa-phone" aria-hidden="true"></i><span class="tip">Позвонить по телефону</span></a>
 
 <div id="lb" role="dialog" aria-modal="true" aria-label="Просмотр фотографии">
   <button class="close" id="lbClose" aria-label="Закрыть"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
@@ -818,6 +819,8 @@
 <style>
 .chat-fab{position:fixed;right:20px;bottom:232px;z-index:9999;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#2AABEE;color:#fff;font-size:24px;cursor:pointer;box-shadow:0 10px 26px rgba(5,12,20,.35);transition:transform .25s}
 .chat-fab:hover{transform:scale(1.08)}
+.chat-fab .tip{position:absolute;right:70px;top:50%;transform:translateY(-50%) translateX(8px);background:rgba(13,27,42,.95);color:#fff;font-size:13px;font-weight:500;white-space:nowrap;padding:8px 14px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+.chat-fab:hover .tip{opacity:1;transform:translateY(-50%) translateX(0)}
 .chat-box{position:fixed;right:20px;bottom:300px;z-index:10000;width:340px;max-width:calc(100vw - 24px);height:480px;max-height:calc(100vh - 320px);background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(5,12,20,.35);display:none;flex-direction:column;overflow:hidden}
 .chat-box.open{display:flex}
 .chat-head{background:var(--base);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px}
@@ -848,7 +851,7 @@
 .chat-wave i{display:block;width:3px;border-radius:2px;background:currentColor;opacity:.55}
 @media(max-width:768px){.chat-fab{bottom:232px;right:14px;width:52px;height:52px;font-size:21px}.chat-box{right:12px;left:12px;width:auto;bottom:296px}}
 </style>
-<button class="chat-fab" id="chatFab" aria-label="Открыть чат"><i class="fa-solid fa-comment-dots" aria-hidden="true"></i></button>
+<button class="chat-fab" id="chatFab" aria-label="Задать вопрос СОКРЕМОНТ"><i class="fa-solid fa-comment-dots" aria-hidden="true"></i><span class="tip">Задать вопрос</span></button>
 <div class="chat-box" id="chatBox" role="dialog" aria-label="Чат с СОКРЕМОНТ">
   <div class="chat-head">
     <i class="fa-solid fa-headset" aria-hidden="true" style="font-size:20px"></i>
@@ -1043,7 +1046,7 @@
   recSendB.addEventListener('click', function () { if (mrec) { try { mrec.stop(); } catch (e) {} } });
   fab.addEventListener('click', function () {
     var open = box.classList.toggle('open');
-    if (open) { render(); poll(); clearInterval(timer); timer = setInterval(poll, 4000); text.focus(); }
+    if (open) { render(); poll(); clearInterval(timer); timer = setInterval(poll, 1000); text.focus(); }
     else { clearInterval(timer); }
   });
   closeB.addEventListener('click', function () { box.classList.remove('open'); clearInterval(timer); });

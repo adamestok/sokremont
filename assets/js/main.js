@@ -223,10 +223,6 @@ document.addEventListener('DOMContentLoaded', function () {
     tEl.textContent = pad(Math.floor(s / 3600)) + ':' + pad(Math.floor((s % 3600) / 60)) + ':' + pad(s % 60);
   }, 1000);
 
-  /* ---------- ВИДЖЕТ "СЕЙЧАС ОНЛАЙН" ---------- */
-  var at = $('#answerTime');
-  setInterval(function () { at.textContent = 38 + Math.floor(Math.random() * 22); }, 300000);
-
   /* ---------- ВИДЕО (VK facade) ---------- */
   $$('.vid').forEach(function (v) {
     v.addEventListener('click', function () {

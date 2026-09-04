@@ -117,7 +117,7 @@ async function tg(cfgv, method, payload) {
 }
 
 /* очередь сообщений сессии */
-async function qGet(kv, sid) { try { return await kv.get('q:' + sid, 'json') || []; } catch (e) { return []; } }
+async function qGet(kv, sid) { try { return await kv.get('q:' + sid, { type: 'json', cacheTtl: 0 }) || []; } catch (e) { return []; } }
 async function qPush(kv, ctx, sid, m) {
   const a = await qGet(kv, sid);
   a.push(m);
@@ -128,7 +128,7 @@ async function qPush(kv, ctx, sid, m) {
 }
 async function sessTouch(kv, sid) {
   try {
-    const v = await kv.get('s:' + sid);
+    const v = await kv.get('s:' + sid, { cacheTtl: 0 });
     const now = Date.now();
     if (v && parseInt(v, 10) > now - 300000) return; // пишем не чаще раза в 5 минут
     await kv.put('s:' + sid, String(now), { expirationTtl: 604800 });
