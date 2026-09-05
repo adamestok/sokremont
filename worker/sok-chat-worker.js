@@ -189,15 +189,17 @@ async function hMsg(req, kv, env, ctx) {
   await qPush(kv, ctx, sid, { from: 'user', name, text, ts, cid: cid || undefined });
   await sessTouch(kv, sid);
 
-  const sent = await tg(c, 'sendMessage', { chat_id: c.chat, text: '\uD83D\uDCAC ' + name + ': ' + text });
+  const badge = '#' + sid.slice(0, 6);
+  const body = '\uD83D\uDCAC ' + name + ' (' + badge + ', #s:' + sid + ')\n' + text;
+  let sent = await tg(c, 'sendMessage', { chat_id: c.chat, text: body });
   if (!(sent.ok && sent.result && sent.result.message_id)) {
-    sent = await tg(c, 'sendMessage', { chat_id: c.chat, text: '\uD83D\uDCAC ' + name + ': ' + text });
+    sent = await tg(c, 'sendMessage', { chat_id: c.chat, text: body });
     if (!(sent.ok && sent.result && sent.result.message_id)) {
       await errLog(kv, 'sendMessage: ' + (sent.description || sent.error || 'ошибка Telegram'));
     }
   }
   if (sent.ok && sent.result && sent.result.message_id) {
-    await kv.put('m:' + c.chat + ':' + sent.result.message_id, sid, { expirationTtl: 604800 });
+    await kv.put('m:' + c.chat + ':' + sent.result.message_id, JSON.stringify({ sid, name, badge }), { expirationTtl: 604800 });
   }
   return j({ ok: true, ts, cid: cid || undefined });
 }
@@ -312,9 +314,15 @@ async function hWebhook(req, kv, env, ctx) {
   if (chatId !== c.chat) return j({ ok: true });
 
   /* маршрутизация: ответ (reply) -> конкретная сессия */
-  let target = null;
+  let target = null, metaName = null;
   const rid = msg.reply_to_message && msg.reply_to_message.message_id;
-  if (rid) target = await kv.get('m:' + c.chat + ':' + rid);
+  if (rid) {
+    const raw = await kv.get('m:' + c.chat + ':' + rid);
+    if (raw) {
+      try { const o = JSON.parse(raw); target = o.sid; if (o.name) metaName = o.name; }
+      catch (e) { target = raw; }
+    }
+  }
 
   const ts = Date.now();
   const mk = (m) => Object.assign({ from: 'bot', ts }, m);
@@ -338,8 +346,13 @@ async function hWebhook(req, kv, env, ctx) {
     await kv.put('a:' + fid, b64enc(buf), { expirationTtl: 604800, metadata: { mime } });
 
     const vm = mk({ type: 'voice', fid, dur: v.duration || undefined });
-    if (target && okSid(target)) await qPush(kv, ctx, target, vm);
-    else await broadcast(kv, ctx, vm);
+    if (target && okSid(target)) {
+      await qPush(kv, ctx, target, vm);
+      await tg(c, 'sendMessage', { chat_id: chatId, text: '\u2705 Голосовое отправлено посетителю' + (metaName ? ' («' + metaName + '»)' : ' (#' + target.slice(0, 6) + ')') });
+    } else {
+      const n2 = await broadcast(kv, ctx, vm);
+      await tg(c, 'sendMessage', { chat_id: chatId, text: '\u2705 Голосовое разослано всем активным (' + n2 + ')' });
+    }
     return j({ ok: true });
   }
 
@@ -356,8 +369,13 @@ async function hWebhook(req, kv, env, ctx) {
       }
     }
     const bm = mk({ text: t.slice(0, 3000) });
-    if (target && okSid(target)) await qPush(kv, ctx, target, bm);
-    else await broadcast(kv, ctx, bm);
+    if (target && okSid(target)) {
+      await qPush(kv, ctx, target, bm);
+      await tg(c, 'sendMessage', { chat_id: chatId, text: '\u2705 Отправлено посетителю' + (metaName ? ' («' + metaName + '»)' : ' (#' + target.slice(0, 6) + ')') });
+    } else {
+      const n2 = await broadcast(kv, ctx, bm);
+      await tg(c, 'sendMessage', { chat_id: chatId, text: '\u2705 Разослано всем активным посетителям (' + n2 + ')' });
+    }
   }
   return j({ ok: true });
 }
@@ -375,6 +393,7 @@ async function broadcast(kv, ctx, m) {
       n++;
     } catch (e) {}
   }
+  return n;
 }
 
 /* ---------- страница настройки ---------- */
