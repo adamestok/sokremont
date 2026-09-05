@@ -32,8 +32,8 @@ export default {
     const p = url.pathname.replace(/\/+$/, '') || '/';
     try {
       if (req.method === 'OPTIONS') return r204();
-      if (p === '/' && req.method === 'GET') return j({ ok: true, name: 'sok-chat', v: 'voice-1' });
-      if (p === '/health') return j({ ok: true, ts: Date.now(), v: 'voice-1' });
+      if (p === '/' && req.method === 'GET') return j({ ok: true, name: 'sok-chat', v: 'voice-2' });
+      if (p === '/health') return j({ ok: true, ts: Date.now(), v: 'voice-2' });
       if (p === '/migrate-owner') {
         if (url.searchParams.get('t') !== (env && env.BOT_TOKEN)) return j({ ok: false, error: 'forbidden' }, 403);
         const st0 = await kv.get('settings', 'json').catch(() => ({})) || {};
@@ -52,8 +52,9 @@ export default {
       }
       if (!kv) return j({ ok: false, error: 'KV binding не найден: добавьте KV namespace в Settings -> Bindings' }, 500);
 
+      if (p === '/diag') return await hDiag(kv, env, url);
       if (p === '/msg' && req.method === 'POST') return await hMsg(req, kv, env, ctx);
-      if (p === '/voice' && req.method === 'POST') return j({ ok: false, error: 'Voice messages from site are disabled' }, 403);
+      if (p === '/voice' && req.method === 'POST') return j({ ok: false, error: 'Голосовые с сайта отключены' }, 403);
       if (p === '/voice' && req.method === 'GET') return await hVoiceGet(url, kv);
       if (p === '/poll' && req.method === 'GET') return await hPoll(url, kv, ctx);
       if (p === '/webhook' || p === '/tgwebhook') return await hWebhook(req, kv, env, ctx);
@@ -139,6 +140,37 @@ async function sessList(kv) {
   return cur.keys.map(k => k.name.slice(2));
 }
 
+async function errLog(kv, msg) {
+  try {
+    await kv.put('err:' + Date.now(), String(msg).slice(0, 500), { expirationTtl: 604800 });
+  } catch (e) {}
+}
+
+async function hDiag(kv, env, url) {
+  const want = (await cfg(kv, env)).token;
+  if (!want || url.searchParams.get('t') !== want) return j({ ok: false, error: 'forbidden' }, 403);
+  const c = await cfg(kv, env);
+  const me = c.token ? await tg(c, 'getMe', {}) : { ok: false };
+  const wh = c.token ? await tg(c, 'getWebhookInfo', {}) : { ok: false };
+  const errs = [];
+  try {
+    const l = await kv.list({ prefix: 'err:', limit: 20 });
+    for (const k of l.keys) {
+      const v = await kv.get(k.name);
+      if (v) errs.push({ at: Number(k.name.slice(4)) || 0, msg: v });
+    }
+    errs.sort((a, b) => b.at - a.at);
+  } catch (e) {}
+  return j({
+    ok: true, v: 'voice-2',
+    token_set: !!c.token,
+    chat: c.chat || null,
+    bot: me.ok && me.result ? me.result.username : null,
+    webhook: wh.ok && wh.result ? { url: wh.result.url || '', pending: wh.result.pending_update_count || 0 } : null,
+    errors: errs
+  });
+}
+
 /* ---------- сайт -> текст ---------- */
 
 async function hMsg(req, kv, env, ctx) {
@@ -158,6 +190,12 @@ async function hMsg(req, kv, env, ctx) {
   await sessTouch(kv, sid);
 
   const sent = await tg(c, 'sendMessage', { chat_id: c.chat, text: '\uD83D\uDCAC ' + name + ': ' + text });
+  if (!(sent.ok && sent.result && sent.result.message_id)) {
+    sent = await tg(c, 'sendMessage', { chat_id: c.chat, text: '\uD83D\uDCAC ' + name + ': ' + text });
+    if (!(sent.ok && sent.result && sent.result.message_id)) {
+      await errLog(kv, 'sendMessage: ' + (sent.description || sent.error || 'ошибка Telegram'));
+    }
+  }
   if (sent.ok && sent.result && sent.result.message_id) {
     await kv.put('m:' + c.chat + ':' + sent.result.message_id, sid, { expirationTtl: 604800 });
   }

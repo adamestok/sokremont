@@ -976,8 +976,8 @@
       recCancel = document.getElementById('recCancel'),
       recSendB = document.getElementById('recSend');
   var mrec = null, mchunks = [], mtimer = null, mstart = 0, mcancel = false, mstream = null;
-  var canRec = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
-  if (!canRec) { mic.style.display = 'none'; }
+  var canRec = false;
+  mic.style.display = 'none';
   function fmtT(ms) { var s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); }
   function pickMime() {
     var list = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/webm', 'audio/mp4'];
