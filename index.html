@@ -925,7 +925,11 @@
         }
       });
     } else if (m.type === 'voice') { d.textContent = '\uD83C\uDF99 Голосовое сообщение'; }
-    else if (m.from === 'user') { d.textContent = m.text; }
+    else if (m.from === 'user') {
+      d.textContent = m.text;
+      if (m.ok === true) { var tick = document.createElement('span'); tick.className = 'tick'; tick.textContent = ' ✓'; d.appendChild(tick); }
+      else if (!m.fid && !m.localUrl && m.ok !== true) { var clock = document.createElement('span'); clock.className = 'tick'; clock.style.color = '#b0bec5'; clock.textContent = ' ⏳'; d.appendChild(clock); }
+    }
     else { var w = document.createElement('span'); w.className = 'who'; w.textContent = 'СОКРЕМОНТ'; d.appendChild(w); d.appendChild(document.createTextNode(m.text)); }
     msgs.appendChild(d);
     msgs.scrollTop = msgs.scrollHeight;
@@ -960,16 +964,33 @@
     busy = true;
     var cid = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     rememberCid(cid);
-    var m = { from: 'user', name: n, text: t, ts: Date.now() };
+    var m = { from: 'user', name: n, text: t, ts: Date.now(), cid: cid };
     addMsg(m); saveHist(m); if (m.ts > lastTs) lastTs = m.ts;
     text.value = '';
     localStorage.setItem('chat_name', n);
+    function chatNote(txt, tgFallback) {
+      var e = document.createElement('div'); e.className = 'chat-msg bot'; e.textContent = txt;
+      msgs.appendChild(e);
+      if (tgFallback) {
+        var a = document.createElement('a'); a.href = 'https://t.me/SOK_56'; a.target = '_blank'; a.rel = 'noopener';
+        a.style.cssText = 'display:inline-block;margin-top:6px;background:#2AABEE;color:#fff!important;padding:6px 12px;border-radius:8px;font-size:13px;text-decoration:none';
+        a.textContent = 'Написать в Telegram';
+        e.appendChild(document.createElement('br')); e.appendChild(a);
+      }
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+    function markSent(m) {
+      var a2 = hist();
+      for (var i = a2.length - 1; i >= 0; i--) { if (a2[i].cid === m.cid) { a2[i].ok = true; break; } }
+      localStorage.setItem('chat_hist_' + sid, JSON.stringify(a2.slice(-100)));
+    }
     fetch(API + '/msg', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sid: sid, name: n, text: t, hp: '', cid: cid }) }).then(function (r) { return r.json(); }).then(function (d) {
       busy = false;
       if (d.ts && d.ts > lastTs) lastTs = d.ts;
-      if (!d.ok) { var e = document.createElement('div'); e.className = 'chat-msg bot'; e.textContent = d.error || 'Не отправилось, попробуйте ещё раз'; msgs.appendChild(e); msgs.scrollTop = msgs.scrollHeight; }
-    }).catch(function () { busy = false; });
+      if (!d.ok) { chatNote(d.error || 'Не отправилось, попробуйте ещё раз', true); }
+      else { markSent(m); }
+    }).catch(function () { busy = false; chatNote('Нет связи с сервером — сообщение, возможно, не доставлено', true); });
   }
   var mic = document.getElementById('chatMic'),
       recTime = document.getElementById('recTime'),
