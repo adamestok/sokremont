@@ -143,7 +143,7 @@
 }
 </script>
 
-<link rel="stylesheet" href="assets/css/style.css?v=11">
+<link rel="stylesheet" href="assets/css/style.css?v=12">
 </head>
 <body>
 <div id="progress"></div>
@@ -848,13 +848,24 @@
     var phone = form.querySelector('#fPhone').value.replace(/\D/g, '');
     if (phone.length < 10){ show('phone'); return; }
 
-    var data = new FormData(form);
-    data.append('_subject', 'Заявка с сайта СОКРЕМОНТ');
+    var name = form.querySelector('#fName').value.trim();
+    var service = form.querySelector('#fService').value;
+    var message = form.querySelector('#fMsg').value.trim();
+    var payload = {
+      sid: 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10),
+      name: name || 'Не указано',
+      hp: honey ? honey.value : '',
+      text: 'Телефон: ' + phone + '\nТема: ' + service + (message ? '\nСообщение: ' + message : '')
+    };
     if (btn) btn.disabled = true;
-    fetch('https://formsubmit.co/ajax/mestikarium@gmail.com', { method: 'POST', body: data })
+    fetch('https://sok-chat.adamynews.workers.dev/msg', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
       .then(function(r){ return r.json(); })
       .then(function(d){
-        if (d && String(d.success) === 'true'){ form.reset(); show('ok'); }
+        if (d && d.ok){ form.reset(); show('ok'); }
         else { show('err'); }
       })
       .catch(function(){ show('err'); })
