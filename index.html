@@ -143,7 +143,7 @@
 }
 </script>
 
-<link rel="stylesheet" href="assets/css/style.css?v=12">
+<link rel="stylesheet" href="assets/css/style.css?v=13">
 </head>
 <body>
 <div id="progress"></div>
@@ -828,7 +828,7 @@
     if (!statusEl) return;
     if (kind === 'ok'){
       statusEl.className = 'form-status ok';
-      statusEl.textContent = 'Заявка отправлена. Перезвоним через 2 минуты!';
+      statusEl.textContent = 'Мы открыли Telegram с готовой заявкой — нажмите «Отправить», и она мгновенно придёт нам.';
     } else if (kind === 'phone'){
       statusEl.className = 'form-status err';
       statusEl.textContent = 'Укажите корректный телефон.';
@@ -851,25 +851,19 @@
     var name = form.querySelector('#fName').value.trim();
     var service = form.querySelector('#fService').value;
     var message = form.querySelector('#fMsg').value.trim();
+    var text = 'Заявка с сайта СОКРЕМОНТ\nИмя: ' + (name || 'Не указано') + '\nТелефон: ' + phone + '\nТема: ' + service + (message ? '\nСообщение: ' + message : '');
     var payload = {
       sid: 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10),
       name: name || 'Не указано',
       hp: honey ? honey.value : '',
-      text: 'Телефон: ' + phone + '\nТема: ' + service + (message ? '\nСообщение: ' + message : '')
+      text: text
     };
-    if (btn) btn.disabled = true;
-    fetch('https://sok-chat.adamynews.workers.dev/msg', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        if (d && d.ok){ form.reset(); show('ok'); }
-        else { show('err'); }
-      })
-      .catch(function(){ show('err'); })
-      .finally(function(){ if (btn) btn.disabled = false; });
+    try {
+      fetch('https://sok-chat.adamynews.workers.dev/msg', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(function(){});
+    } catch (e) {}
+    window.open('https://t.me/SOK_56?text=' + encodeURIComponent(text), '_blank');
+    form.reset();
+    show('ok');
   });
 })();
 </script>
