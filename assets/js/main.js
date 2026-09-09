@@ -274,23 +274,4 @@ document.addEventListener('DOMContentLoaded', function () {
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') { closeLb(); closePol(); closeMob(); }
   });
-
-  /* ---------- ФОРМА ---------- */
-  var form = $('#leadForm');
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    var name = $('#fName'), phone = $('#fPhone');
-    var bad = false;
-    [name, phone].forEach(function (f) {
-      var ok = f.value.trim().length > (f === phone ? 5 : 1);
-      f.style.borderColor = ok ? '' : '#D0344A';
-      if (!ok) bad = true;
-    });
-    if (bad) return;
-    form.innerHTML = '<div style="text-align:center;padding:40px 0;">' +
-      '<p style="font-size:24px;font-weight:700;color:var(--accent);margin-bottom:8px;">Готово. Мы свяжемся с вами в течение 2 часов.</p>' +
-      '<p style="font-size:16px;color:#666;">Обычно мы звоним первыми — в среднем через 2 минуты.</p>' +
-      '<p style="font-size:14px;color:#999;margin-top:16px;">А пока скачайте наш бесплатный чек-лист: ' +
-      '<a href="#" style="color:var(--accent);text-decoration:underline;">5 ошибок при выборе подрядчика на ремонт</a></p></div>';
-  });
 });
