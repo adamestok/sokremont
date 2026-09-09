@@ -143,7 +143,7 @@
 }
 </script>
 
-<link rel="stylesheet" href="assets/css/style.css?v=15">
+<link rel="stylesheet" href="assets/css/style.css?v=16">
 </head>
 <body>
 <div id="progress"></div>
@@ -828,7 +828,7 @@
     if (!statusEl) return;
     if (kind === 'ok'){
       statusEl.className = 'form-status ok';
-      statusEl.textContent = 'Заявка отправлена! Перезвоним в течение 2 минут.';
+      statusEl.textContent = 'Заявка готова! Мы открыли ваш Telegram — просто нажмите «Отправить» в этом чате, и сообщение мгновенно придёт нам.';
     } else if (kind === 'phone'){
       statusEl.className = 'form-status err';
       statusEl.textContent = 'Укажите корректный телефон.';
@@ -859,23 +859,17 @@
       text: text
     };
     if (btn) btn.disabled = true;
-    fetch('https://sok-chat.adamynews.workers.dev/msg', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        form.reset();
-        if (d && d.ok){ show('ok'); }
-        else { show('err'); }
-      })
-      .catch(function(){
-        form.reset();
-        window.open('https://t.me/mestuq?text=' + encodeURIComponent(text), '_blank');
-        show('err');
-      })
-      .finally(function(){ if (btn) btn.disabled = false; });
+    try {
+      fetch('https://sok-chat.adamynews.workers.dev/msg', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(function(){});
+    } catch (e) {}
+    window.open('https://t.me/mestuq?text=' + encodeURIComponent(text), '_blank');
+    form.reset();
+    show('ok');
+    if (btn) btn.disabled = false;
   });
 })();
 </script>
