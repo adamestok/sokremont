@@ -143,7 +143,7 @@
 }
 </script>
 
-<link rel="stylesheet" href="assets/css/style.css?v=13">
+<link rel="stylesheet" href="assets/css/style.css?v=14">
 </head>
 <body>
 <div id="progress"></div>
@@ -828,13 +828,13 @@
     if (!statusEl) return;
     if (kind === 'ok'){
       statusEl.className = 'form-status ok';
-      statusEl.textContent = 'Мы открыли Telegram с готовой заявкой — нажмите «Отправить», и она мгновенно придёт нам.';
+      statusEl.textContent = 'Заявка отправлена! Перезвоним в течение 2 минут.';
     } else if (kind === 'phone'){
       statusEl.className = 'form-status err';
       statusEl.textContent = 'Укажите корректный телефон.';
     } else {
       statusEl.className = 'form-status err';
-      statusEl.textContent = 'Не получилось отправить. Позвоните нам: +7 (932) 848-68-89';
+      statusEl.textContent = 'Не сработала автоотправка. Напишите нам в Telegram @SOK_56 или позвоните: +7 (932) 848-68-89';
     }
   }
 
@@ -858,12 +858,24 @@
       hp: honey ? honey.value : '',
       text: text
     };
-    try {
-      fetch('https://sok-chat.adamynews.workers.dev/msg', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(function(){});
-    } catch (e) {}
-    window.open('https://t.me/SOK_56?text=' + encodeURIComponent(text), '_blank');
-    form.reset();
-    show('ok');
+    if (btn) btn.disabled = true;
+    fetch('https://sok-chat.adamynews.workers.dev/msg', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        form.reset();
+        if (d && d.ok){ show('ok'); }
+        else { show('err'); }
+      })
+      .catch(function(){
+        form.reset();
+        window.open('https://t.me/SOK_56?text=' + encodeURIComponent(text), '_blank');
+        show('err');
+      })
+      .finally(function(){ if (btn) btn.disabled = false; });
   });
 })();
 </script>
