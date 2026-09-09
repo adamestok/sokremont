@@ -143,7 +143,7 @@
 }
 </script>
 
-<link rel="stylesheet" href="assets/css/style.css?v=10">
+<link rel="stylesheet" href="assets/css/style.css?v=11">
 </head>
 <body>
 <div id="progress"></div>
@@ -725,7 +725,9 @@
             <label for="fMsg">Сообщение <span style="text-transform:none;letter-spacing:0">(необязательно)</span></label>
             <textarea id="fMsg" name="message" placeholder="Площадь, адрес объекта, сроки — всё, что важно"></textarea>
           </div>
+          <input type="text" name="_honey" tabindex="-1" autocomplete="off" style="display:none" aria-hidden="true">
           <button class="btn btn-primary" type="submit"><span>Отправить заявку</span><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></button>
+          <p class="form-status" role="status" aria-live="polite"></p>
           <p class="consent">Нажимая кнопку, вы соглашаетесь с <button type="button" id="policyOpen">политикой обработки персональных данных</button></p>
         </form>
       </div>
@@ -815,6 +817,51 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
 <script src="assets/js/main.js" defer></script>
 
+<script>
+(function(){
+  var form = document.getElementById('leadForm');
+  if (!form) return;
+  var statusEl = form.querySelector('.form-status');
+  var btn = form.querySelector('button[type="submit"]');
+
+  function show(kind){
+    if (!statusEl) return;
+    if (kind === 'ok'){
+      statusEl.className = 'form-status ok';
+      statusEl.textContent = 'Заявка отправлена. Перезвоним через 2 минуты!';
+    } else if (kind === 'phone'){
+      statusEl.className = 'form-status err';
+      statusEl.textContent = 'Укажите корректный телефон.';
+    } else {
+      statusEl.className = 'form-status err';
+      statusEl.textContent = 'Не получилось отправить. Позвоните нам: +7 (932) 848-68-89';
+    }
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    if (statusEl) statusEl.className = 'form-status';
+    var honey = form.querySelector('[name="_honey"]');
+    if (honey && honey.value.trim() !== ''){
+      form.reset(); show('ok'); return;
+    }
+    var phone = form.querySelector('#fPhone').value.replace(/\D/g, '');
+    if (phone.length < 10){ show('phone'); return; }
+
+    var data = new FormData(form);
+    data.append('_subject', 'Заявка с сайта СОКРЕМОНТ');
+    if (btn) btn.disabled = true;
+    fetch('https://formsubmit.co/ajax/mestikarium@gmail.com', { method: 'POST', body: data })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d && String(d.success) === 'true'){ form.reset(); show('ok'); }
+        else { show('err'); }
+      })
+      .catch(function(){ show('err'); })
+      .finally(function(){ if (btn) btn.disabled = false; });
+  });
+})();
+</script>
 
 </body>
 </html>
