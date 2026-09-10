@@ -143,7 +143,7 @@
 }
 </script>
 
-<link rel="stylesheet" href="assets/css/style.css?v=16">
+<link rel="stylesheet" href="assets/css/style.css?v=17">
 </head>
 <body>
 <div id="progress"></div>
@@ -828,13 +828,13 @@
     if (!statusEl) return;
     if (kind === 'ok'){
       statusEl.className = 'form-status ok';
-      statusEl.textContent = 'Заявка готова! Мы открыли ваш Telegram — просто нажмите «Отправить» в этом чате, и сообщение мгновенно придёт нам.';
+      statusEl.textContent = 'Заявка отправлена! Перезвоним в течение 2 минут.';
     } else if (kind === 'phone'){
       statusEl.className = 'form-status err';
       statusEl.textContent = 'Укажите корректный телефон.';
     } else {
       statusEl.className = 'form-status err';
-      statusEl.textContent = 'Не сработала автоотправка. Напишите нам в Telegram @mestuq или позвоните: +7 (932) 848-68-89';
+      statusEl.textContent = 'Не удалось отправить заявку. Позвоните нам: +7 (932) 848-68-89 или напишите в Telegram @mestuq';
     }
   }
 
@@ -851,25 +851,42 @@
     var name = form.querySelector('#fName').value.trim();
     var service = form.querySelector('#fService').value;
     var message = form.querySelector('#fMsg').value.trim();
-    var text = 'Заявка с сайта СОКРЕМОНТ\nИмя: ' + (name || 'Не указано') + '\nТелефон: ' + phone + '\nТема: ' + service + (message ? '\nСообщение: ' + message : '');
     var payload = {
-      sid: 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10),
       name: name || 'Не указано',
-      hp: honey ? honey.value : '',
-      text: text
+      phone: phone,
+      tema: service,
+      message: message,
+      _subject: 'Заявка с сайта СОКРЕМОНТ',
+      _template: 'box',
+      _captcha: 'false',
+      _honey: honey ? honey.value : ''
     };
     if (btn) btn.disabled = true;
-    try {
-      fetch('https://sok-chat.adamynews.workers.dev/msg', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      }).catch(function(){});
-    } catch (e) {}
-    window.open('https://t.me/mestuq?text=' + encodeURIComponent(text), '_blank');
-    form.reset();
-    show('ok');
-    if (btn) btn.disabled = false;
+    fetch('https://formsubmit.co/ajax/sokremont56@yandex.ru', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        form.reset();
+        if (d && d.success){
+          show('ok');
+        } else if (d && (/activation/i.test(d.message || '') || !d.success)){
+          if (statusEl){
+            statusEl.className = 'form-status ok';
+            statusEl.textContent = 'Заявка принята на почту. Загляните в sokremont56@yandex.ru и подтвердите активацию формы по ссылке из письма (один раз).';
+          }
+          if (btn) btn.disabled = false;
+        } else {
+          show('err');
+        }
+      })
+      .catch(function(){
+        form.reset();
+        show('err');
+      })
+      .finally(function(){ if (btn) btn.disabled = false; });
   });
 })();
 </script>
