@@ -143,7 +143,7 @@
 }
 </script>
 
-<link rel="stylesheet" href="assets/css/style.css?v=17">
+<link rel="stylesheet" href="assets/css/style.css?v=18">
 </head>
 <body>
 <div id="progress"></div>
@@ -834,7 +834,7 @@
       statusEl.textContent = 'Укажите корректный телефон.';
     } else {
       statusEl.className = 'form-status err';
-      statusEl.textContent = 'Не удалось отправить заявку. Позвоните нам: +7 (932) 848-68-89 или напишите в Telegram @mestuq';
+      statusEl.textContent = 'Не удалось отправить заявку. Позвоните нам: +7 (932) 848-68-89';
     }
   }
 
@@ -851,16 +851,15 @@
     var name = form.querySelector('#fName').value.trim();
     var service = form.querySelector('#fService').value;
     var message = form.querySelector('#fMsg').value.trim();
-    var payload = {
-      name: name || 'Не указано',
-      phone: phone,
-      tema: service,
-      message: message,
-      _subject: 'Заявка с сайта СОКРЕМОНТ',
-      _template: 'box',
-      _captcha: 'false',
-      _honey: honey ? honey.value : ''
-    };
+    var fd = new FormData();
+    fd.append('name', name || 'Не указано');
+    fd.append('phone', phone);
+    fd.append('tema', service);
+    if (message) fd.append('message', message);
+    fd.append('_subject', 'Заявка с сайта СОКРЕМОНТ');
+    fd.append('_template', 'box');
+    fd.append('_captcha', 'false');
+    if (honey) fd.append('_honey', honey.value);
     if (btn) btn.disabled = true;
     try {
       fetch('https://sok-chat.adamynews.workers.dev/msg', {
@@ -876,15 +875,20 @@
     } catch (e) {}
     fetch('https://formsubmit.co/ajax/sokremont56@yandex.ru', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify(payload)
+      headers: { 'Accept': 'application/json' },
+      body: fd
     })
-      .then(function(r){ return r.json(); })
+      .then(function(r){
+        return r.text().then(function(t){
+          try { return JSON.parse(t); }
+          catch (er) { return { http: r.status, raw: t }; }
+        });
+      })
       .then(function(d){
         form.reset();
-        if (d && d.success){
+        if (d && (d.success === 'true' || d.success === true)){
           show('ok');
-        } else if (d && (/activation/i.test(d.message || '') || !d.success)){
+        } else if (d && d.message && /activation/i.test(d.message)){
           if (statusEl){
             statusEl.className = 'form-status ok';
             statusEl.textContent = 'Заявка принята на почту. Загляните в sokremont56@yandex.ru и подтвердите активацию формы по ссылке из письма (один раз).';
