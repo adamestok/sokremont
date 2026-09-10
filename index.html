@@ -143,7 +143,7 @@
 }
 </script>
 
-<link rel="stylesheet" href="assets/css/style.css?v=19">
+<link rel="stylesheet" href="assets/css/style.css?v=20">
 </head>
 <body>
 <div id="progress"></div>
@@ -852,10 +852,10 @@
     var service = form.querySelector('#fService').value;
     var message = form.querySelector('#fMsg').value.trim();
     var fd = new FormData();
-    fd.append('name', name || 'Не указано');
-    fd.append('phone', phone);
-    fd.append('tema', service);
-    if (message) fd.append('message', message);
+    fd.append('Имя', name || 'Не указано');
+    fd.append('Телефон', phone);
+    fd.append('Тема', service);
+    if (message) fd.append('Сообщение', message);
     fd.append('_subject', 'Заявка с сайта СОКРЕМОНТ');
     fd.append('_template', 'box');
     fd.append('_captcha', 'false');
