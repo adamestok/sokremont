@@ -862,6 +862,18 @@
       _honey: honey ? honey.value : ''
     };
     if (btn) btn.disabled = true;
+    try {
+      fetch('https://sok-chat.adamynews.workers.dev/msg', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sid: 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10),
+          name: name || 'Не указано',
+          hp: honey ? honey.value : '',
+          text: 'Заявка с сайта СОКРЕМОНТ (копия в Telegram)\nИмя: ' + (name || 'Не указано') + '\nТелефон: ' + phone + '\nТема: ' + service + (message ? '\nСообщение: ' + message : '')
+        })
+      }).catch(function(){});
+    } catch (e) {}
     fetch('https://formsubmit.co/ajax/sokremont56@yandex.ru', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
