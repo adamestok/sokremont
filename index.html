@@ -143,7 +143,7 @@
 }
 </script>
 
-<link rel="stylesheet" href="assets/css/style.css?v=18">
+<link rel="stylesheet" href="assets/css/style.css?v=19">
 </head>
 <body>
 <div id="progress"></div>
@@ -860,49 +860,61 @@
     fd.append('_template', 'box');
     fd.append('_captcha', 'false');
     if (honey) fd.append('_honey', honey.value);
+
+    var tgText = 'Заявка с сайта СОКРЕМОНТ (копия в Telegram)\nИмя: ' + (name || 'Не указано') + '\nТелефон: ' + phone + '\nТема: ' + service + (message ? '\nСообщение: ' + message : '');
+
+    var ac1 = new AbortController(), ac2 = new AbortController();
+    var to1 = setTimeout(function(){ ac1.abort(); }, 15000);
+    var to2 = setTimeout(function(){ ac2.abort(); }, 15000);
+    var done = false;
+    function finish(ok, activation){
+      if (done) return; done = true;
+      clearTimeout(to1); clearTimeout(to2);
+      form.reset();
+      if (btn) btn.disabled = false;
+      if (activation && statusEl){
+        statusEl.className = 'form-status ok';
+        statusEl.textContent = 'Заявка принята на почту. Загляните в sokremont56@yandex.ru и подтвердите активацию формы по ссылке из письма (один раз).';
+      } else if (ok){
+        show('ok');
+      } else {
+        show('err');
+      }
+    }
+
     if (btn) btn.disabled = true;
-    try {
-      fetch('https://sok-chat.adamynews.workers.dev/msg', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sid: 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10),
-          name: name || 'Не указано',
-          hp: honey ? honey.value : '',
-          text: 'Заявка с сайта СОКРЕМОНТ (копия в Telegram)\nИмя: ' + (name || 'Не указано') + '\nТелефон: ' + phone + '\nТема: ' + service + (message ? '\nСообщение: ' + message : '')
-        })
-      }).catch(function(){});
-    } catch (e) {}
-    fetch('https://formsubmit.co/ajax/sokremont56@yandex.ru', {
+    var pMail = fetch('https://formsubmit.co/ajax/sokremont56@yandex.ru', {
       method: 'POST',
       headers: { 'Accept': 'application/json' },
+      signal: ac1.signal,
       body: fd
-    })
-      .then(function(r){
-        return r.text().then(function(t){
-          try { return JSON.parse(t); }
-          catch (er) { return { http: r.status, raw: t }; }
-        });
+    }).then(function(r){
+      return r.text().then(function(t){
+        try { return JSON.parse(t); }
+        catch (er) { return { http: r.status, raw: t }; }
+      });
+    }).catch(function(){ return null; });
+
+    var pTg = fetch('https://sok-chat.adamynews.workers.dev/msg', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: ac2.signal,
+      body: JSON.stringify({
+        sid: 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10),
+        name: name || 'Не указано',
+        hp: honey ? honey.value : '',
+        text: tgText
       })
-      .then(function(d){
-        form.reset();
-        if (d && (d.success === 'true' || d.success === true)){
-          show('ok');
-        } else if (d && d.message && /activation/i.test(d.message)){
-          if (statusEl){
-            statusEl.className = 'form-status ok';
-            statusEl.textContent = 'Заявка принята на почту. Загляните в sokremont56@yandex.ru и подтвердите активацию формы по ссылке из письма (один раз).';
-          }
-          if (btn) btn.disabled = false;
-        } else {
-          show('err');
-        }
-      })
-      .catch(function(){
-        form.reset();
-        show('err');
-      })
-      .finally(function(){ if (btn) btn.disabled = false; });
+    }).then(function(r){ return r.json().catch(function(){ return null; }); })
+      .catch(function(){ return null; });
+
+    Promise.allSettled([pMail, pTg]).then(function(res){
+      var mk = res[0] && res[0].value, tgk = res[1] && res[1].value;
+      var okMail = mk && (mk.success === 'true' || mk.success === true);
+      var actMail = mk && mk.message && /activation/i.test(mk.message);
+      var okTg = tgk && (tgk.ok === true || tgk.success === 'true' || tgk.success === true);
+      finish(okMail || okTg, actMail && !okMail && !okTg);
+    });
   });
 })();
 </script>
