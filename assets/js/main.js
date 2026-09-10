@@ -223,14 +223,25 @@ document.addEventListener('DOMContentLoaded', function () {
     tEl.textContent = pad(Math.floor(s / 3600)) + ':' + pad(Math.floor((s % 3600) / 60)) + ':' + pad(s % 60);
   }, 1000);
 
-  /* ---------- ВИДЕО (VK facade) ---------- */
+  /* ---------- ВИДЕО (VK facade / локальный файл) ---------- */
   $$('.vid').forEach(function (v) {
     v.addEventListener('click', function () {
-      if (v.querySelector('iframe')) return;
-      var f = document.createElement('iframe');
-      f.src = 'https://vk.com/video_ext.php?oid=' + v.dataset.oid + '&id=' + v.dataset.id + '&hd=2&autoplay=1';
-      f.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
-      f.setAttribute('allowfullscreen', 'true');
+      if (v.querySelector('iframe') || v.querySelector('video')) return;
+      var f;
+      if (v.dataset.oid && v.dataset.id) {
+        f = document.createElement('iframe');
+        f.src = 'https://vk.com/video_ext.php?oid=' + v.dataset.oid + '&id=' + v.dataset.id + '&hd=2&autoplay=1';
+        f.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
+        f.setAttribute('allowfullscreen', 'true');
+      } else if (v.dataset.src) {
+        f = document.createElement('video');
+        f.src = v.dataset.src;
+        f.controls = true;
+        f.autoplay = true;
+        f.playsInline = true;
+        f.preload = 'metadata';
+      }
+      if (!f) return;
       v.appendChild(f);
       var p = v.querySelector('.vid-play');
       if (p) p.style.display = 'none';
