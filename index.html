@@ -143,7 +143,7 @@
 }
 </script>
 
-<link rel="stylesheet" href="assets/css/style.css?v=23">
+<link rel="stylesheet" href="assets/css/style.css?v=24">
 </head>
 <body>
 <div id="progress"></div>
@@ -583,7 +583,7 @@
       <figure class="vid" data-aos="fade-up" data-aos-delay="160" data-src="assets/video/remont-ot-do.mp4">
         <img src="assets/img/video-remont-2.webp" alt="Ремонт квартиры от и до — видео СОКРЕМОНТ" loading="lazy">
         <div class="vid-play"><i class="fa-solid fa-play" aria-hidden="true"></i></div>
-        <figcaption><b>Ремонт От и ДО</b><span>Демонтаж, инженерные работы и отделка — весь путь на одном видео</span></figcaption>
+        <figcaption><b>Все этапы ремонта</b><span>Демонтаж, инженерные работы и отделка — весь путь на одном видео</span></figcaption>
       </figure>
     </div>
   </div>
@@ -795,6 +795,11 @@
   <button class="close" id="lbClose" aria-label="Закрыть"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
   <img id="lbImg" src="" alt="">
   <div class="cap" id="lbCap"></div>
+</div>
+
+<div id="vidLb" role="dialog" aria-modal="true" aria-label="Просмотр видео">
+  <button class="close" id="vidLbClose" aria-label="Закрыть"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+  <video id="vidLbVideo" controls playsinline preload="auto"></video>
 </div>
 
 <div id="policy" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
