@@ -84,3 +84,4 @@ html[data-theme=light] #pain .label,html[data-theme=light] #services .label,html
 .h2-why{font-size:46px;overflow-wrap:break-word}@media(max-width:900px){.h2-why{font-size:36px}}@media(max-width:768px){.h2-why{font-size:30px}}@media(max-width:400px){.h2-why{font-size:26px}}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 a[href^="tel"]{white-space:nowrap}.cta-phone{font-size:clamp(18px,6.5vw,44px)}
+.h2-48{font-size:48px}.h2-42{font-size:42px}.h2-32{font-size:32px}@media(max-width:900px){.h2-48,.h2-42{font-size:34px}.h2-32{font-size:26px}}@media(max-width:768px){.h2-48,.h2-42{font-size:30px}.h2-32{font-size:24px}}@media(max-width:400px){.h2-48,.h2-42{font-size:25px}.h2-32{font-size:21px}}.h2{overflow-wrap:break-word}
