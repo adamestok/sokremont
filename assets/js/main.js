@@ -301,4 +301,16 @@ document.addEventListener('DOMContentLoaded', function () {
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') { closeLb(); closePol(); closeMob(); }
   });
+
+  /* ---------- ЦЕЛИ ЯНДЕКС.МЕТРИКИ (телефон / мессенджеры) ---------- */
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest ? e.target.closest('a[href]') : null;
+    if (!a || !window.ym) return;
+    var href = a.getAttribute('href') || '';
+    var goal = null;
+    if (href.indexOf('tel:') === 0) goal = 'phone_click';
+    else if (href.indexOf('wa.me') !== -1) goal = 'whatsapp_click';
+    else if (href.indexOf('t.me') !== -1) goal = 'telegram_click';
+    if (goal) { try { ym(97589001, 'reachGoal', goal); } catch (err) {} }
+  });
 });
